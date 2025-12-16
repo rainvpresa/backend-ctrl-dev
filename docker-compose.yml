@@ -1,0 +1,49 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: agham_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: agham_pgadmin
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@agham.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+    ports:
+      - "8081:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      - postgres
+
+  api:
+    build: .
+    container_name: agham_api
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    # Mount the project for development so code edits are visible without rebuild
+    volumes:
+      - ./AGHAMazingQuestMobile:/app/AGHAMazingQuestMobile
+    # Use Django's autoreload dev server for faster development feedback
+    command: python manage.py runserver 0.0.0.0:8000
+    depends_on:
+      - postgres
+
+volumes:
+  pgdata:
+  pgadmin_data:

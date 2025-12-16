@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.py[cod]
+env/
+
+# Django static and media
+staticfiles/
+media/
+
+# Node / frontend
+frontend/cms/node_modules/
+frontend/cms/build/
+# (mobile frontend removed from this repository)
+
+# Local env files
+.env
+.env.local
+
+# VSCode
+.vscode/
