@@ -7,3 +7,8 @@ env/
 .venv/
 node_modules/
 .DS_Store
+
+# Security keys
+*.pem
+*.key
+.env
