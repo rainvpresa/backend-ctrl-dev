@@ -34,8 +34,19 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'unsafe-default-for-dev-only')
 DEBUG = os.environ.get('DJANGO_DEBUG', 'True') == 'True'
 
 # Read allowed hosts from env (space separated), default to localhost for dev
-ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', 'localhost 127.0.0.1').split()
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    '.ngrok-free.dev',  # Adding a dot at the start covers all ngrok subdomains
+    'unauthorised-boyce-telegrammatic.ngrok-free.dev'
+]
 
+# ADD THIS LINE: Required for Django 4.0+ to allow secure ngrok tunnels
+CSRF_TRUSTED_ORIGINS = [
+    'https://unauthorised-boyce-telegrammatic.ngrok-free.dev'
+]
+
+CORS_ALLOW_ALL_ORIGINS = True
 
 # Application definition
 
@@ -58,11 +69,11 @@ INSTALLED_APPS = [
     "allauth.socialaccount.providers.google",
     "accounts", 
     
-    "ar", 
-    "learning", 
-    "tours", 
-    "feedback", 
-    "chatbot",
+    # "ar", 
+   # "learning", 
+    #"tours", 
+   # "feedback", 
+  #  "chatbot",
 ]
 
 # Sites framework required by django-allauth
@@ -94,6 +105,15 @@ SOCIALACCOUNT_PROVIDERS = {
     }
 }
 
+ACCOUNT_EMAIL_VERIFICATION = "optional"   # allow email, no forced confirm
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_AUTHENTICATION_METHOD = "email"
+ACCOUNT_USERNAME_REQUIRED = False
+ACCOUNT_ADAPTER = "accounts.adapters.NoEmailVerificationAdapter"
+
+
+
+
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
@@ -113,6 +133,7 @@ TOKEN_MODEL = None
 # Enable token blacklist app for simplejwt token rotation/blacklist support
 INSTALLED_APPS += [
     'rest_framework_simplejwt.token_blacklist',
+    'corsheaders',
 ]
 
 SPECTACULAR_SETTINGS = {
@@ -130,7 +151,10 @@ MIDDLEWARE = [
     'allauth.account.middleware.AccountMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
+
+CORS_ALLOW_ALL_ORIGINS = True
 
 ROOT_URLCONF = 'AGHAMazingQuestMobile.urls'
 
@@ -182,6 +206,17 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
+AUTHENTICATION_BACKENDS = [
+    'accounts.backends.EmailBackend',   # allow email login
+    'django.contrib.auth.backends.ModelBackend',  # fallback
+]
+
+REST_AUTH_SERIALIZERS = {
+    'LOGIN_SERIALIZER': 'accounts.serializers.CustomLoginSerializer',
+}
+
+
+
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
@@ -207,9 +242,17 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Email settings (use console backend by default for local/dev)
-DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'no-reply@agham.com')
-EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
+# Email settings
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'paoloandrei782@gmail.com'
+EMAIL_HOST_PASSWORD = 'auvpgvtdoeinrbrp'  # your 16-char Gmail App Password
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+
+
 
 # Media files (user uploads)
 # `MEDIA_URL` is the URL prefix for media files and `MEDIA_ROOT` is

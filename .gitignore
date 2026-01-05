@@ -1,20 +1,9 @@
-# Python
-__pycache__/
-*.py[cod]
-env/
-
-# Django static and media
-staticfiles/
-media/
-
-# Node / frontend
-frontend/cms/node_modules/
-frontend/cms/build/
-# (mobile frontend removed from this repository)
-
-# Local env files
+*.pyc
+*__pycache__*
 .env
-.env.local
-
-# VSCode
-.vscode/
+db.sqlite3
+venv/
+env/
+.venv/
+node_modules/
+.DS_Store

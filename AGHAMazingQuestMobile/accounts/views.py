@@ -28,33 +28,53 @@ class ProfileView(RetrieveAPIView):
 
 
 class OTPRequestView(APIView):
-	"""Request an OTP to be sent to the provided email."""
+    """Request an OTP to be sent to the provided email."""
 
-	permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.AllowAny]
 
-	def post(self, request):
-		serializer = OTPRequestSerializer(data=request.data)
-		serializer.is_valid(raise_exception=True)
-		email = serializer.validated_data['email']
+    def post(self, request):
+        serializer = OTPRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        email = serializer.validated_data['email']
 
-		# generate 6-digit code
-		code = f"{random.randint(0, 999999):06d}"
-		expires_at = timezone.now() + timedelta(minutes=10)
+        # generate 4-digit code
+        code = f"{random.randint(0, 9999):04d}"
+        expires_at = timezone.now() + timedelta(minutes=10)
 
-		otp = EmailOTP.objects.create(email=email, code=code, expires_at=expires_at)
+        EmailOTP.objects.create(
+            email=email,
+            code=code,
+            expires_at=expires_at
+        )
 
-		# send email (console backend by default in dev)
-		subject = "Your AGHAMazingQuest login code"
-		message = f"Your login code is: {code}. It expires in 10 minutes."
-		from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', None)
-		try:
-			send_mail(subject, message, from_email, [email], fail_silently=False)
-		except Exception:
-			# don't leak send errors to client - log and return generic response
-			# but for now, surface error
-			return Response({"detail": "Failed to send email."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        subject = "Your AGHAMazingQuest login code"
+        message = f"Your login code is: {code}. It expires in 10 minutes."
+        from_email = settings.DEFAULT_FROM_EMAIL
 
-		return Response({"detail": "OTP sent if the email exists."}, status=status.HTTP_200_OK)
+        try:
+            send_mail(
+                subject,
+                message,
+                from_email,
+                [email],
+                fail_silently=False,
+            )
+            print(f"OTP {code} sent successfully to {email}")
+        except Exception as e:
+            print(f"Failed to send OTP email to {email}: {e}")
+            return Response(
+                {"detail": "Failed to send email.", "error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+        return Response(
+            {"detail": "OTP sent if the email exists."},
+            status=status.HTTP_200_OK
+        )
+
+
+
+
 
 
 class OTPVerifyView(APIView):

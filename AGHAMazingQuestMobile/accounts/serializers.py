@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import User
-
+from dj_rest_auth.serializers import LoginSerializer
+from rest_framework import serializers
 
 class UserSerializer(serializers.ModelSerializer):
     avatar_url = serializers.SerializerMethodField()
@@ -25,3 +26,14 @@ class OTPRequestSerializer(serializers.Serializer):
 class OTPVerifySerializer(serializers.Serializer):
     email = serializers.EmailField()
     code = serializers.CharField(max_length=10)
+
+class CustomLoginSerializer(LoginSerializer):
+    # Accept email as the main login field
+    username = serializers.CharField(required=False, allow_blank=True)
+    email = serializers.EmailField(required=True)
+
+    def validate(self, attrs):
+        # Copy email into username for allauth
+        attrs['username'] = attrs.get('email')
+        return super().validate(attrs)
+    
